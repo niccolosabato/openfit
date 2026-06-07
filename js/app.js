@@ -247,7 +247,6 @@ const INITIAL_PROFILE = {
       document.getElementById('edit-height').value = state.profile.height;
       document.getElementById('edit-weight').value = state.profile.weight;
       document.getElementById('edit-goal').value = state.profile.fitnessGoal;
-      document.getElementById('edit-exp').value = state.profile.experience;
       document.getElementById('edit-equip').value = state.profile.equipment;
       document.getElementById('edit-injuries').value = state.profile.injuries;
 
