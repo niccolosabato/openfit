@@ -8,26 +8,9 @@
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/tailwind.js"> </script>
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            slate: {
-              850: '#1e293b',
-              950: '#020617',
-            }
-          },
-          screens: {
-            'xs': '375px',
-          }
-        }
-      }
-    }
-  </script>
 
 </head>
 <body class="h-full bg-slate-950 text-slate-100 font-sans antialiased flex flex-col overflow-hidden">
@@ -252,7 +235,7 @@
         <!-- ================= TAB: DASHBOARD ================= -->
         <div id="tab-dashboard" class="tab-content space-y-4">
           <!-- Welcome Banner -->
-          <div class="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-955 border border-slate-800 p-4.5 rounded-2xl relative overflow-hidden">
+          <div class="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-955 border border-slate-800 p-5 rounded-2xl relative overflow-hidden">
             <div class="absolute top-0 right-0 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
             <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
@@ -316,7 +299,7 @@
         <!-- ================= STREAMING_CHUNK: Coding workout builder tools... -->
         <!-- ================= TAB: WORKOUT BUILDER ================= -->
         <div id="tab-workout-builder" class="tab-content hidden space-y-4">
-          <div class="bg-slate-900 border border-slate-800 p-4.5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div class="w-full sm:w-auto">
               <span class="bg-accent/10 text-accent text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full border border-accent/20">Customization Center</span>
               <div class="flex items-center gap-2 mt-1.5 w-full">
@@ -406,7 +389,7 @@
           </div>
 
           <!-- Weight Log & Chart -->
-          <div class="bg-slate-900 border border-slate-800 p-4.5 rounded-2xl">
+          <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
               <div>
                 <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Weight Tracking Chart</h3>
@@ -452,7 +435,7 @@
           </div>
 
           <!-- Muscle Groups analytics -->
-          <div class="bg-slate-900 border border-slate-800 p-4.5 rounded-2xl">
+          <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
             <div class="mb-4">
               <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Volume per Muscle Group (Kg)</h3>
               <p class="text-[11px] text-slate-500">Workload distribution computed dynamically as: (Weight × Sets × Repetitions)</p>
