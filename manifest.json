@@ -1,7 +1,7 @@
 {
   "name": "OpenFit: Pro Workout Diary",
   "short_name": "OpenFit",
-  "start_url": "/openfit",
+  "start_url": "/openfit/index.html",
   "display": "standalone",
   "background_color": "#020617",
   "theme_color": "#020617",
