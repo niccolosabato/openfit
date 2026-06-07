@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <link rel="stylesheet" href="css/style.css">
+  <title>OpenFit - Pro Workout Diary</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              850: '#1e293b',
+              950: '#020617',
+            }
+          },
+          screens: {
+            'xs': '375px',
+          }
+        }
+      }
+    }
+  </script>
+
+</head>
+<body class="h-full bg-slate-950 text-slate-100 font-sans antialiased flex flex-col overflow-hidden">
+
+  <!-- ================= STREAMING_CHUNK: Injecting custom modal structures... -->
+  <!-- ================= CUSTOM TOAST NOTIFICATION CONTAINER ================= -->
+  <div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none w-full max-w-sm px-4"></div>
+
+  <!-- ================= CUSTOM MODALS OVERLAY ================= -->
+  <div id="custom-modal-overlay" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-4">
+      <div class="flex items-center gap-3">
+        <div id="modal-icon-container" class="p-2.5 rounded-xl bg-accent/10 text-accent">
+          <i id="modal-icon" data-lucide="help-circle" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h3 id="modal-title" class="text-sm font-black text-slate-100 font-display">Confirmation</h3>
+          <p id="modal-description" class="text-xs text-slate-400 mt-1 leading-relaxed">Are you sure you want to proceed?</p>
+        </div>
+      </div>
+      <div class="flex gap-2 pt-1">
+        <button id="modal-cancel-btn" class="flex-1 bg-slate-850 hover:bg-slate-800 text-slate-300 py-2.5 rounded-xl text-xs font-bold transition-all border border-slate-800">Cancel</button>
+        <button id="modal-confirm-btn" class="flex-1 bg-accent hover:bg-accent-hover text-slate-950 py-2.5 rounded-xl text-xs font-black transition-all">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= WORKOUT DAY SELECTOR MODAL ================= -->
+  <div id="day-selector-modal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+        <div class="flex items-center gap-2">
+          <div class="p-1.5 rounded-lg bg-accent/10 text-accent">
+            <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+          </div>
+          <h3 class="text-sm font-black text-slate-100">Start Workout Session</h3>
+        </div>
+        <button onclick="closeDaySelectorModal()" class="text-slate-500 hover:text-slate-300 transition-all p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      
+      <p class="text-xs text-slate-400">Select which training split you want to log and execute today:</p>
+      
+      <div id="selector-modal-days-list" class="space-y-2 max-h-[250px] overflow-y-auto pr-1">
+        <!-- Injected dynamically via JS -->
+      </div>
+      
+      <div class="pt-2">
+        <button onclick="closeDaySelectorModal()" class="w-full bg-slate-855 hover:bg-slate-800 text-slate-300 py-2.5 rounded-xl text-xs font-bold transition-all border border-slate-800">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= STREAMING_CHUNK: Building onboarding screens... -->
+  <!-- ================= ONBOARDING SCREEN ================= -->
+  <div id="onboarding-screen" class="hidden fixed inset-0 z-45 bg-slate-950 flex flex-col overflow-y-auto">
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-5 py-4 flex justify-between items-center shrink-0">
+      <div class="flex items-center gap-2.5">
+        <div class="bg-gradient-to-tr from-emerald-500 to-cyan-500 text-slate-950 p-2 rounded-xl shadow-lg">
+          <i data-lucide="dumbbell" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">OpenFit</h1>
+          <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Pro Workout Diary</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 flex items-center justify-center p-4">
+      <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-5 md:p-7 shadow-2xl relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-36 h-36 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div class="flex items-center gap-3 mb-5">
+          <div class="bg-emerald-500/10 text-emerald-400 p-2 rounded-xl border border-emerald-500/20">
+            <i data-lucide="sparkles" class="w-5 h-5 animate-pulse"></i>
+          </div>
+          <div>
+            <h2 class="text-base font-black text-slate-100">Setup Your Profile</h2>
+            <p class="text-xs text-slate-400">Configure your parameters to tailor your analytics.</p>
+          </div>
+        </div>
+
+        <form id="onboarding-form" class="space-y-3.5">
+          <div class="space-y-1">
+            <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Athlete Name</label>
+            <input type="text" id="prof-name" required placeholder="Enter your name..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 transition-all placeholder:text-slate-600">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3.5">
+            <div class="space-y-1">
+              <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Age</label>
+              <input type="number" id="prof-age" min="10" max="100" required placeholder="e.g., 25" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none">
+            </div>
+            <div class="space-y-1">
+              <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Height (cm)</label>
+              <input type="number" id="prof-height" min="100" max="250" required placeholder="e.g., 175" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none">
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Current Weight (kg)</label>
+            <input type="number" id="prof-weight" min="30" max="250" step="0.1" required placeholder="e.g., 72.5" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none">
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Primary Fitness Goal</label>
+            <select id="prof-goal" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none">
+              <option value="Muscle Mass">Muscle Mass (Hypertrophy)</option>
+              <option value="Cutting">Cutting (Fat Loss)</option>
+              <option value="Max Strength">Max Strength (Weight Progression)</option>
+              <option value="Recomposition">Recomposition & Maintenance</option>
+            </select>
+          </div>
+
+          <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl space-y-2">
+            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Initial Schedule Configuration</span>
+            <div class="grid grid-cols-1 gap-2">
+              <label class="border border-slate-800 hover:border-emerald-500/50 p-2.5 rounded-lg flex items-start gap-2 cursor-pointer transition-all bg-slate-900/40">
+                <input type="radio" name="init-workout-choice" value="template" checked class="mt-0.5 accent-emerald-500">
+                <div class="ml-1">
+                  <span class="text-xs font-bold block text-slate-200">Load Upper / Lower / Legs Template</span>
+                  <span class="text-[10px] text-slate-500 block">Pre-fill database with a complete, structured routine</span>
+                </div>
+              </label>
+              <label class="border border-slate-800 hover:border-emerald-500/50 p-2.5 rounded-lg flex items-start gap-2 cursor-pointer transition-all bg-slate-900/40">
+                <input type="radio" name="init-workout-choice" value="scratch" class="mt-0.5 accent-emerald-500">
+                <div class="ml-1">
+                  <span class="text-xs font-bold block text-slate-200">Start from Scratch</span>
+                  <span class="text-[10px] text-slate-500 block">Build your fully customized split step by step</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full mt-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 py-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]">
+            <span>Enter OpenFit</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <!-- ================= STREAMING_CHUNK: Rendering dashboard interface... -->
+  <!-- ================= MAIN APP WEB INTERFACE ================= -->
+  <div id="main-app" class="hidden h-full flex flex-col overflow-hidden">
+    <!-- HEADER BAR -->
+    <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800/60 px-4 py-3 md:px-8 flex justify-between items-center shrink-0">
+      <div class="flex items-center gap-2.5">
+        <div class="bg-accent text-slate-950 p-2 rounded-xl shadow-md transition-all">
+          <i data-lucide="dumbbell" class="w-4 h-4"></i>
+        </div>
+        <div>
+          <h1 class="text-sm md:text-base font-black tracking-tight bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent">OpenFit</h1>
+          <p class="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider">Pro Workout Diary</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 text-[10px] bg-slate-950/60 px-2.5 py-1.5 rounded-full border border-slate-800">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+          <span id="header-user-name" class="text-slate-300 font-bold max-w-[70px] truncate">Athlete</span>
+          <span class="text-slate-600">|</span>
+          <span id="header-user-weight" class="text-accent font-bold">0 Kg</span>
+        </div>
+        
+        <!-- TOP RIGHT QUICK NAVIGATION BUTTON TO PROFILE -->
+        <button onclick="switchTab('profile')" class="p-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg transition-all text-slate-300" title="Profile & Settings">
+          <i data-lucide="user" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY LAYOUT -->
+    <div class="flex-1 flex flex-col lg:flex-row max-w-[1400px] w-full mx-auto overflow-hidden">
+      <!-- SIDEBAR (DESKTOP NAV) -->
+      <nav class="hidden lg:flex bg-slate-900 border-r border-slate-800/80 p-4 flex-col gap-1.5 shrink-0 w-64">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all text-slate-400 hover:bg-slate-800/50">
+          <i data-lucide="activity" class="w-4 h-4"></i>
+          <span>Dashboard</span>
+        </button>
+
+        <button onclick="switchTab('workout-builder')" id="nav-workout-builder" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all text-slate-400 hover:bg-slate-800/50">
+          <i data-lucide="pencil-ruler" class="w-4 h-4"></i>
+          <span>Workout Builder</span>
+        </button>
+
+        <button onclick="switchTab('history')" id="nav-history" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all text-slate-400 hover:bg-slate-800/50">
+          <i data-lucide="history" class="w-4 h-4"></i>
+          <span>Workout History</span>
+        </button>
+
+        <button onclick="switchTab('analytics')" id="nav-analytics" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all text-slate-400 hover:bg-slate-800/50">
+          <i data-lucide="trending-up" class="w-4 h-4"></i>
+          <span>Progress & Charts</span>
+        </button>
+
+        <button onclick="switchTab('active-workout')" id="nav-active-workout" class="hidden flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-amber-500 bg-amber-500/10 border border-amber-500/20 animate-pulse">
+          <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+          <span>Active Workout!</span>
+        </button>
+
+        <button onclick="switchTab('profile')" id="nav-profile" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium transition-all text-slate-400 hover:bg-slate-800/50">
+          <i data-lucide="user" class="w-4 h-4"></i>
+          <span>Profile & Settings</span>
+        </button>
+
+        <div class="mt-auto p-4 bg-slate-950 rounded-2xl border border-slate-850 text-center">
+          <i data-lucide="shield-check" class="w-4 h-4 text-accent mx-auto mb-1.5"></i>
+          <h4 class="text-[10px] font-bold text-slate-200 uppercase tracking-wider mb-0.5">Offline Storage</h4>
+          <p class="text-[9px] text-slate-500 mb-2">Logs reside securely on this local browser environment.</p>
+          <button onclick="exportBackupData()" class="w-full bg-slate-900 border border-slate-800 hover:bg-slate-855 text-slate-300 py-1.5 rounded-lg text-[9px] font-bold transition-all flex items-center justify-center gap-1">
+            <i data-lucide="download" class="w-2.5 h-2.5"></i> Backup JSON
+          </button>
+        </div>
+      </nav>
+
+      <!-- SCROLLABLE DISPLAY CONTAINER -->
+      <main class="flex-1 overflow-y-auto p-3.5 md:p-6 pb-28 lg:pb-6">
+        
+        <!-- ================= TAB: DASHBOARD ================= -->
+        <div id="tab-dashboard" class="tab-content space-y-4">
+          <!-- Welcome Banner -->
+          <div class="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-955 border border-slate-800 p-4.5 rounded-2xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span class="bg-accent/10 text-accent text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full border border-accent/20">Active Engine</span>
+                <h2 class="text-lg font-black text-slate-100 mt-1.5">Ready to progress, <span id="dash-user-name">Champ</span>?</h2>
+                <p class="text-slate-400 text-xs mt-0.5 max-w-lg leading-relaxed">
+                  Log individual weights and repetitions on the fly. All changes are automatically captured in your local progress history.
+                </p>
+              </div>
+              <div class="flex gap-2 shrink-0">
+                <button onclick="switchTab('workout-builder')" class="bg-slate-850 hover:bg-slate-800 text-slate-200 px-3 py-2 rounded-xl text-xs font-bold transition-all border border-slate-800 active:scale-95">Edit Split</button>
+                <button onclick="openStartWorkoutSelector()" class="bg-accent hover:bg-accent-hover text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black transition-all shadow-accent-glow flex items-center gap-1 active:scale-95">
+                  <i data-lucide="play" class="w-3 h-3 fill-slate-950"></i>
+                  <span>Start Session</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Metrics Status Grid -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-xl">
+              <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Body Weight</span>
+              <div class="flex items-baseline gap-0.5 mt-0.5">
+                <span id="stat-weight" class="text-base font-black text-slate-100">--</span>
+                <span class="text-[10px] text-slate-500">kg</span>
+              </div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-xl">
+              <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Logged Workouts</span>
+              <div class="flex items-baseline gap-0.5 mt-0.5">
+                <span id="stat-completed-count" class="text-base font-black text-accent">0</span>
+                <span class="text-[10px] text-slate-500">sessions</span>
+              </div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-xl">
+              <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Total Volume</span>
+              <div class="flex items-baseline gap-0.5 mt-0.5">
+                <span id="stat-total-volume" class="text-base font-black text-slate-100">0</span>
+                <span class="text-[10px] text-slate-500">kg lif.</span>
+              </div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-xl">
+              <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Active Routine</span>
+              <span id="stat-split-name" class="text-xs font-extrabold text-accent block truncate mt-1">Empty</span>
+            </div>
+          </div>
+
+          <!-- Quick Day Selector -->
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+            <div class="mb-3">
+              <h3 class="text-xs font-extrabold text-slate-200 uppercase tracking-wider">Scheduled Training Days</h3>
+              <p class="text-[11px] text-slate-400 mt-0.5">Click "Train" to immediately start log and track metrics for a specific day.</p>
+            </div>
+            <div id="dashboard-days-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+              <!-- Injected dynamically via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= STREAMING_CHUNK: Coding workout builder tools... -->
+        <!-- ================= TAB: WORKOUT BUILDER ================= -->
+        <div id="tab-workout-builder" class="tab-content hidden space-y-4">
+          <div class="bg-slate-900 border border-slate-800 p-4.5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div class="w-full sm:w-auto">
+              <span class="bg-accent/10 text-accent text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full border border-accent/20">Customization Center</span>
+              <div class="flex items-center gap-2 mt-1.5 w-full">
+                <input type="text" id="builder-plan-name" placeholder="My Workout Split" class="bg-transparent border-b border-dashed border-slate-700 hover:border-slate-500 text-base font-black text-slate-100 focus:outline-none focus:border-accent py-0.5 w-full sm:w-60">
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Build, reorder, and structure customized splits. Autosaved instantly.</p>
+            </div>
+            
+            <div class="flex flex-row gap-2 w-full sm:w-auto justify-end">
+              <button onclick="loadTemplateSuggested()" class="flex-1 sm:flex-none bg-slate-855 hover:bg-slate-800 text-slate-300 px-3 py-2 rounded-xl text-xs font-bold transition-all border border-slate-800 flex items-center justify-center gap-1.5">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-accent"></i>
+                <span>Load Template</span>
+              </button>
+              <button onclick="addNewDayToBuilder()" class="flex-1 sm:flex-none bg-accent hover:bg-accent-hover text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black transition-all shadow-md flex items-center justify-center gap-1.5">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                <span>Add Training Day</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="builder-days-container" class="space-y-4">
+            <!-- Programmatically rendered -->
+          </div>
+        </div>
+
+        <!-- ================= STREAMING_CHUNK: Designing active workout logs... -->
+        <!-- ================= TAB: ACTIVE WORKOUT TRACKER ================= -->
+        <div id="tab-active-workout" class="tab-content hidden space-y-4">
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider">Workout Session in Progress</span>
+              </div>
+              <h2 id="active-session-name" class="text-base font-black text-slate-100 mt-1">Split Name</h2>
+              <p class="text-[11px] text-slate-400 mt-0.5">Enter weights and repetitions. Hit play checkmark to trigger rest timer.</p>
+            </div>
+
+            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+              <!-- Rest Timer -->
+              <div id="timer-box" class="bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl flex items-center gap-2 shrink-0">
+                <i data-lucide="clock" id="timer-icon" class="w-4 h-4 text-slate-500"></i>
+                <div>
+                  <span class="text-[8px] text-slate-400 block font-bold uppercase">Resting</span>
+                  <span id="timer-display" class="font-mono text-xs font-bold text-slate-100">0:00</span>
+                </div>
+                <button onclick="toggleTimer()" id="timer-control-btn" class="ml-1 bg-slate-900 hover:bg-slate-855 text-[9px] px-2 py-0.5 rounded font-black text-slate-300">Start</button>
+              </div>
+
+              <button onclick="finishActiveWorkout()" class="bg-accent hover:bg-accent-hover text-slate-950 px-3.5 py-2.5 rounded-xl text-xs font-black transition-all shadow-accent-glow shrink-0 active:scale-[0.98]">
+                Finish Session
+              </button>
+            </div>
+          </div>
+
+          <div id="active-workout-exercises" class="space-y-3.5">
+            <!-- Programmatically rendered -->
+          </div>
+        </div>
+
+        <!-- ================= STREAMING_CHUNK: Setting up history container... -->
+        <!-- ================= TAB: WORKOUT HISTORY ================= -->
+        <div id="tab-history" class="tab-content hidden space-y-4">
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-row justify-between items-center gap-3">
+            <div>
+              <span class="bg-accent/10 text-accent text-[9px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-accent/20">Chronological Logs</span>
+              <h2 class="text-base font-black text-slate-100 mt-1">Completed Sessions</h2>
+              <p class="text-[11px] text-slate-400 mt-0.5">Review history, logged weights, reps, and overall volume trends.</p>
+            </div>
+            <button onclick="clearAllHistory()" class="bg-rose-950/20 hover:bg-rose-950/40 text-rose-400 border border-rose-500/15 px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 shrink-0">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              <span class="hidden xs:inline">Wipe History</span>
+            </button>
+          </div>
+
+          <div id="history-container" class="space-y-2.5">
+            <!-- Timelines programmatically loaded -->
+          </div>
+        </div>
+
+        <!-- ================= TAB: PROGRESS & CHARTS (ANALYTICS) ================= -->
+        <div id="tab-analytics" class="tab-content hidden space-y-4">
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+            <span class="bg-accent/10 text-accent text-[9px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-accent/20">Analytics Dashboard</span>
+            <h2 class="text-base font-black text-slate-100 mt-1">Body Weight & Muscle Volume</h2>
+            <p class="text-[11px] text-slate-400 mt-0.5">Observe body mass logs and track total workload volume split by muscle targeting.</p>
+          </div>
+
+          <!-- Weight Log & Chart -->
+          <div class="bg-slate-900 border border-slate-800 p-4.5 rounded-2xl">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+              <div>
+                <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Weight Tracking Chart</h3>
+                <p class="text-[11px] text-slate-500">Your logged bodyweight metrics</p>
+              </div>
+              <form id="analytics-weight-form" class="flex gap-2 w-full sm:w-auto">
+                <input type="number" step="0.1" id="new-weight-val" required placeholder="kg" class="flex-1 sm:flex-none bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-xs text-center w-24 text-slate-200 focus:outline-none focus:border-accent">
+                <button type="submit" class="bg-accent text-slate-950 px-3 py-2 rounded-xl text-xs font-black hover:bg-accent-hover transition-all flex items-center justify-center gap-1 shrink-0">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                  <span>Add Log</span>
+                </button>
+              </form>
+            </div>
+
+            <div class="overflow-x-auto w-full pb-2">
+              <div id="analytics-weight-chart" class="flex items-end justify-between h-40 pt-4 border-b border-slate-800 px-1 gap-2 min-w-[300px]">
+                <!-- Graph bars programmatically loaded -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Exercise Load Tracker & PRs Tool -->
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3">
+            <div class="flex items-center gap-2">
+              <div class="p-1.5 rounded-lg bg-accent/10 text-accent">
+                <i data-lucide="line-chart" class="w-4 h-4 text-accent"></i>
+              </div>
+              <div>
+                <h3 class="text-xs font-extrabold text-slate-200 uppercase tracking-wider">Exercise Load Tracker & PRs</h3>
+                <p class="text-[10px] text-slate-500">Track and visualize weight progression for individual exercises.</p>
+              </div>
+            </div>
+            
+            <div>
+              <select id="analytics-exercise-selector" onchange="renderExerciseLoadProgression()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-accent">
+                <option value="">Select an exercise to track...</option>
+              </select>
+            </div>
+
+            <div id="analytics-load-progression-container" class="hidden bg-slate-950/50 border border-slate-850 rounded-xl p-3.5 space-y-2">
+              <!-- Progression timeline populated dynamically -->
+            </div>
+          </div>
+
+          <!-- Muscle Groups analytics -->
+          <div class="bg-slate-900 border border-slate-800 p-4.5 rounded-2xl">
+            <div class="mb-4">
+              <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Volume per Muscle Group (Kg)</h3>
+              <p class="text-[11px] text-slate-500">Workload distribution computed dynamically as: (Weight × Sets × Repetitions)</p>
+            </div>
+            <div id="muscle-groups-bars" class="space-y-3">
+              <!-- Load horizontally structured bars -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= STREAMING_CHUNK: Drafting profile and theme options... -->
+        <!-- ================= TAB: PROFILE & SETTINGS ================= -->
+        <div id="tab-profile" class="tab-content hidden max-w-2xl mx-auto space-y-4">
+          
+          <!-- Profile Card -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 space-y-4">
+            <div class="flex items-center gap-3 pb-2.5 border-b border-slate-800/80">
+              <div class="bg-accent/10 text-accent p-2 rounded-xl border border-accent/20">
+                <i data-lucide="user" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h2 class="text-sm font-black text-slate-100">Athlete Profile</h2>
+                <p class="text-[11px] text-slate-400">Modify physical parameters and baseline options.</p>
+              </div>
+            </div>
+
+            <form id="profile-edit-form" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1">
+                  <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Athlete Name</label>
+                  <input type="text" id="edit-name" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-accent">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Gender</label>
+                  <select id="edit-gender" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-accent">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 md:col-span-2">
+                  <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Age</label>
+                    <input type="number" id="edit-age" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-accent">
+                  </div>
+                  <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Height (cm)</label>
+                    <input type="number" id="edit-height" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-accent">
+                  </div>
+                  <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Weight (kg)</label>
+                    <input type="number" id="edit-weight" step="0.1" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-accent">
+                  </div>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Fitness Goal</label>
+                  <select id="edit-goal" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-accent">
+                    <option value="Muscle Mass">Muscle Mass (Hypertrophy)</option>
+                    <option value="Cutting">Cutting (Fat Loss)</option>
+                    <option value="Max Strength">Max Strength (Weight Progression)</option>
+                    <option value="Recomposition">Recomposition & Maintenance</option>
+                  </select>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Experience Level</label>
+                  <select id="edit-exp" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-accent">
+                    <option value="Beginner">Beginner (under 1 year)</option>
+                    <option value="Intermediate">Intermediate (1 to 3 years)</option>
+                    <option value="Advanced">Advanced (3+ years)</option>
+                  </select>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Equipment Access</label>
+                  <select id="edit-equip" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-accent">
+                    <option value="Commercial Gym">Commercial Gym</option>
+                    <option value="Home Gym">Home Gym (Free weights/Rack)</option>
+                    <option value="Bodyweight">Bodyweight / Calisthenics</option>
+                  </select>
+                </div>
+
+                <div class="space-y-1 md:col-span-2">
+                  <label class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block flex items-center gap-1">
+                    <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                    <span>Injuries or Physical Limitations</span>
+                  </label>
+                  <textarea id="edit-injuries" rows="2" placeholder="e.g. Right shoulder pain on flat benching" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-accent"></textarea>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t border-slate-800 flex justify-end">
+                <button type="submit" class="bg-accent hover:bg-accent-hover text-slate-950 px-5 py-2 rounded-xl text-xs font-black transition-all">
+                  Save Profile Changes
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Color Customizer & Settings (Relocated Here) -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 space-y-4">
+            <div class="flex items-center gap-3 pb-2.5 border-b border-slate-800/80">
+              <div class="bg-accent/10 text-accent p-2 rounded-xl border border-accent/20">
+                <i data-lucide="settings" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h2 class="text-sm font-black text-slate-100">Preferences & UI Style</h2>
+                <p class="text-[11px] text-slate-400">Modify application themes and local storage database.</p>
+              </div>
+            </div>
+
+            <!-- Color Palette Customizer -->
+            <div class="space-y-2">
+              <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Application Accent Theme Color</label>
+              <div class="grid grid-cols-5 gap-1.5">
+                <button onclick="setThemeAccent('emerald')" class="border border-slate-800 hover:border-emerald-500/40 p-2 rounded-xl flex flex-col items-center gap-1 bg-slate-955 transition-all">
+                  <span class="w-4 h-4 rounded-full bg-emerald-500 block"></span>
+                  <span class="text-[8px] font-bold text-slate-400">Emerald</span>
+                </button>
+                <button onclick="setThemeAccent('cyan')" class="border border-slate-800 hover:border-cyan-500/40 p-2 rounded-xl flex flex-col items-center gap-1 bg-slate-955 transition-all">
+                  <span class="w-4 h-4 rounded-full bg-cyan-500 block"></span>
+                  <span class="text-[8px] font-bold text-slate-400">Cyan</span>
+                </button>
+                <button onclick="setThemeAccent('violet')" class="border border-slate-800 hover:border-violet-500/40 p-2 rounded-xl flex flex-col items-center gap-1 bg-slate-955 transition-all">
+                  <span class="w-4 h-4 rounded-full bg-violet-500 block"></span>
+                  <span class="text-[8px] font-bold text-slate-400">Violet</span>
+                </button>
+                <button onclick="setThemeAccent('amber')" class="border border-slate-800 hover:border-amber-500/40 p-2 rounded-xl flex flex-col items-center gap-1 bg-slate-955 transition-all">
+                  <span class="w-4 h-4 rounded-full bg-amber-500 block"></span>
+                  <span class="text-[8px] font-bold text-slate-400">Amber</span>
+                </button>
+                <button onclick="setThemeAccent('rose')" class="border border-slate-800 hover:border-rose-500/40 p-2 rounded-xl flex flex-col items-center gap-1 bg-slate-955 transition-all">
+                  <span class="w-4 h-4 rounded-full bg-rose-500 block"></span>
+                  <span class="text-[8px] font-bold text-slate-400">Rose</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Export / Import Backups -->
+            <div class="p-3 bg-slate-955 border border-slate-855 rounded-xl space-y-2">
+              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Import or Export Local Database File</span>
+              <p class="text-[10px] text-slate-500 leading-relaxed">
+                Exporting downloads a compact `.json` file containing your custom workouts, physical metrics history, and complete training timelines. Re-upload at any time on another browser or device.
+              </p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <button onclick="exportBackupData()" class="bg-slate-900 border border-slate-800 hover:bg-slate-855 text-slate-200 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5">
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i> Export Backup (.json)
+                </button>
+                
+                <label class="bg-slate-900 border border-slate-800 hover:bg-slate-855 text-slate-200 py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center">
+                  <i data-lucide="upload" class="w-3.5 h-3.5"></i> Import Backup (.json)
+                  <input type="file" id="import-backup-file" accept=".json" class="hidden" onchange="importBackupData(event)">
+                </label>
+              </div>
+            </div>
+
+            <!-- Wipe application -->
+            <div class="p-3 bg-rose-950/10 border border-rose-500/10 rounded-xl space-y-1.5">
+              <span class="text-[9px] font-bold text-rose-400 uppercase tracking-wider block">Danger Zone</span>
+              <p class="text-[10px] text-slate-500 leading-relaxed">Resetting deletes your custom routine split, physical parameters, and all logged history parameters permanently.</p>
+              <button onclick="resetAllDataDangerously()" class="bg-rose-955/30 hover:bg-rose-955/50 text-rose-400 border border-rose-500/20 py-1.5 px-3 rounded-lg text-xs font-bold transition-all mt-1">
+                Factory Reset App
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </main>
+    </div>
+
+    <!-- MOBILE BOTTOM NAVIGATION BAR -->
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800/80 flex justify-around items-center py-1.5 px-1 pb-safe-bottom">
+      <button onclick="switchTab('dashboard')" id="mob-dashboard" class="flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all text-slate-400">
+        <i data-lucide="activity" class="w-4.5 h-4.5"></i>
+        <span class="text-[8px] xs:text-[9px]">Home</span>
+      </button>
+
+      <button onclick="switchTab('workout-builder')" id="mob-workout-builder" class="flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all text-slate-400">
+        <i data-lucide="pencil-ruler" class="w-4.5 h-4.5"></i>
+        <span class="text-[8px] xs:text-[9px]">Build</span>
+      </button>
+
+      <!-- Contextual Action Button (Train / Start Quick) -->
+      <button onclick="handleMobileWorkoutAction()" id="mob-action" class="flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all text-slate-400">
+        <i data-lucide="play" id="mob-action-icon" class="w-4.5 h-4.5"></i>
+        <span id="mob-action-label" class="text-[8px] xs:text-[9px]">Train</span>
+      </button>
+
+      <button onclick="switchTab('history')" id="mob-history" class="flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all text-slate-400">
+        <i data-lucide="history" class="w-4.5 h-4.5"></i>
+        <span class="text-[8px] xs:text-[9px]">History</span>
+      </button>
+
+      <button onclick="switchTab('analytics')" id="mob-analytics" class="flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all text-slate-400">
+        <i data-lucide="trending-up" class="w-4.5 h-4.5"></i>
+        <span class="text-[8px] xs:text-[9px]">Progress</span>
+      </button>
+    </nav>
+  </div>
+
+  <script src="js/app.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,30 @@
+    :root {
+      --accent-color: #10b981;
+      --accent-hover: #059669;
+      --accent-glow: rgba(16, 185, 129, 0.15);
+    }
+    .bg-accent { background-color: var(--accent-color) !important; }
+    .hover\:bg-accent-hover:hover { background-color: var(--accent-hover) !important; }
+    .text-accent { color: var(--accent-color) !important; }
+    .border-accent { border-color: var(--accent-color) !important; }
+    .focus\:border-accent:focus { border-color: var(--accent-color) !important; }
+    .shadow-accent-glow { box-shadow: 0 10px 15px -3px var(--accent-glow); }
+
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #020617;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+    }
+    body {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .pb-safe-bottom {
+      padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+    }
